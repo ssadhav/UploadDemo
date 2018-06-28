@@ -1,0 +1,117 @@
+<!doctype html>
+<meta charset="utf-8"/>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<body>
+<h1>UPLOAD</h1>
+
+	<input type="file" id="upload-file" hidden="hidden"/>
+	<button type="button" id="upload-button">Select the file</button>
+	<span id="upload-text">No file selected</span>
+	<div id="output"></div>
+	<video controls autoplay></video>
+
+</body>
+
+
+<script type="text/javascript">
+	const uploadFileBtn = document.getElementById("upload-file");
+	const uploadBtn = document.getElementById("upload-button");
+	const uploadText = document.getElementById("upload-text");
+
+
+	uploadBtn.addEventListener("click",function(){
+		uploadFileBtn.click();
+	});
+
+	uploadFileBtn.addEventListener("change",function(){
+		if(uploadFileBtn.value){
+			uploadText.innerHTML = uploadFileBtn.value;
+		}
+		else
+		{uploadText.innerHTML = "No file selected";
+		}
+	});
+
+	
+
+uploadFileBtn.addEventListener("change", function(event) {
+   
+   // Retrieve the uploaded file information from <input>
+
+    var files = uploadFileBtn.files;
+    for (var i = 0; i < files.length; i++) {
+        console.log("Filename: " + files[i].name);
+        console.log("Type: " + files[i].type);
+        console.log("Size: " + files[i].size + " bytes");
+    }
+
+
+    
+    loadMime(files[0], function(mime) {
+
+       
+        output.innerHTML = mime;
+        var fileType = files[0].type;
+        var videoNode = document.querySelector('video');
+        
+    	var fileURL = URL.createObjectURL(files[0]);
+  		videoNode.src = fileURL;
+
+    });
+});
+
+/* 
+		Identify the MIME by using the firt bytes of the file
+
+*/
+function loadMime(file,callback)
+{
+	
+    var header = "";
+	
+	var blob = file.slice(0, 4); 
+   
+	var reader = new FileReader();
+    
+
+    reader.onloadend = function(e) {
+        if (e.target.readyState === FileReader.DONE) {
+            var bytes = new Uint8Array(e.target.result);
+            
+    	for (var i = 0; i < bytes.length; i++) {
+      		header = header + bytes[i].toString(16);
+    	}
+    	
+ 		//determine the MIME type
+
+    	switch(header){
+    	case "00018": 
+    	case "00020":
+    	case "0001C": mime = 'video/mp4'; break;
+    	case "00014":
+    	case "0092a": mime = 'video/quicktime'; break;
+    	case "1a45dfa3": mime = 'video/webm'; break;
+    	case "4f676753": mime = 'video/ogg'; break;
+    	case "52494646": mime = 'video/x-msvideo'; break;
+    	case "3026b275": mime = 'video/x-ms-wmv'; break;
+    	case "001b3": mime = 'video/mpeg'; break;
+    	default: mime = "unknown"; break;
+    	}
+    	
+    	return callback("Mime: " + mime);
+         
+        }
+        
+  
+    };
+
+
+    reader.readAsArrayBuffer(blob);
+    
+  
+}
+
+
+</script>
+</html>
